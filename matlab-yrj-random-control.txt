@@ -1,0 +1,119 @@
+clc;
+clear
+%% 整车参数(PAC轮胎)
+m = 1128.5 + 139.4 * 2; % 整车质量kg（簧上与前后簧下质量之和）
+mb = 1128.5; % 簧上车身质量kg
+
+mw = 139.4 / 2; % 等效轮胎重力kg(考虑整个簧下质量)(单个车轮质量为15kg)
+Bf = 1.725; % 前轴轮距m 
+Br = 1.750; % 后轴轮距m
+Lf = 1.330; % 质心距离前轴的距离m
+Lr = 3.140 - 1.330; % 质心距离后轴的距离m
+L = 3.140; % 轴距m 
+hg = 0.781; % 质心距离地面高度m
+Ix = 423.3; % 整车x轴转动惯量kg*m^2
+Iy = 1762.5; % 整车y轴转动惯量kg*m^2
+Iz = 1762.5; % 整车z轴转动惯量kg*m^2
+I_tire = 0.7; % 轮胎转动惯量/ kg*m^2
+ks_f = 189000; % 前悬架垂直刚度N/m
+ks_r = 189000; % 后悬架垂直刚度N/m
+Cs_f = 4302; % 前悬架阻尼 N/(m/s)
+Cs_r = 4302; % 后悬架阻尼 N/(m/s)
+kw = 220000; % 轮胎垂直刚度N/m
+% Cw = 2000; % 轮胎阻尼系数N/(m/s)
+
+He = 0.45; % 车身质心至侧倾轴线的高度 m
+Hp = 0.2; % 车身质心至俯仰中心的高度 m
+f = 0.004; % 滚动阻力系数
+r = 0.287; % 车轮滚动半径/m
+u = 1; % 路面附着系数
+g = 9.8; % 重力加速度
+Cd = 0.4; % 空气阻力系数
+A = 5; % 迎风面积m^2
+p = 1.206; % 空气密度 N*s^2/m^4
+
+wz0 = 0; % 初始z角速度 rad/s
+vx0 = 5; % 初始Vx速度 m/s
+vy0 = 0; % 初始Vy速度 m/s
+w0 = vx0 / r; % 初始轮速 rad/s
+
+% 保存数据
+vehicle_params.m = m;
+vehicle_params.mb = mb;
+vehicle_params.mw = mw;
+vehicle_params.Bf = Bf;
+vehicle_params.Br = Br;
+vehicle_params.Lf = Lf;
+vehicle_params.Lr = Lr;
+vehicle_params.L = L;
+vehicle_params.hg = hg;
+vehicle_params.Ix = Ix;
+vehicle_params.Iy = Iy;
+vehicle_params.Iz = Iz;
+vehicle_params.I_tire = I_tire;
+vehicle_params.ks_f = ks_f;
+vehicle_params.ks_r = ks_r;
+vehicle_params.Cs_f = Cs_f;
+vehicle_params.Cs_r = Cs_r;
+vehicle_params.kw = kw;
+% vehicle_params.Cw = Cw;
+vehicle_params.He = He;
+vehicle_params.Hp = Hp;
+vehicle_params.f = f;
+vehicle_params.r = r;
+vehicle_params.u = u;
+vehicle_params.g = g;
+vehicle_params.Cd = Cd;
+vehicle_params.A = A;
+vehicle_params.p = p;
+
+% 初始条件
+initial_conditions.wz0 = wz0;
+initial_conditions.vx0 = vx0;
+initial_conditions.vy0 = vy0;
+initial_conditions.w0 = vx0 / r;
+
+% 获取仿真设置参数
+model = 'carsim_with_simulink14dof';
+open_system(model);
+sim_params.time = get_param(model, 'StopTime');
+sim_params.solverType = get_param(model, 'Solver');
+sim_params.fixedStep = get_param(model, 'FixedStep');
+
+% 工况
+conditions = {
+    struct('T_motor_seed', 111, 'Delta_act_seed', 222),
+    struct('T_motor_seed', 133, 'Delta_act_seed', 233),
+    struct('T_motor_seed', 222, 'Delta_act_seed', 345),
+    struct('T_motor_seed', 123, 'Delta_act_seed', 666),
+    struct('T_motor_seed', 125, 'Delta_act_seed', 456),
+    struct('T_motor_seed', 333, 'Delta_act_seed', 466),
+    struct('T_motor_seed', 444, 'Delta_act_seed', 266),
+    struct('T_motor_seed', 555, 'Delta_act_seed', 245),
+    struct('T_motor_seed', 666, 'Delta_act_seed', 777),
+    struct('T_motor_seed', 777, 'Delta_act_seed', 433)
+};
+
+
+% 运行每个工况的仿真
+for i = 1:length(conditions)
+
+    % 设置随机种子
+    T_motor_seed = conditions{i}.T_motor_seed;
+    Delta_act_seed = conditions{i}.Delta_act_seed;
+    random_seeds.T_motor_seed = T_motor_seed;
+    random_seeds.Delta_act_seed = Delta_act_seed;
+
+    % 运行仿真+获取数据
+    sim(model);
+    T_motor = T_motor_out.Data;
+    Delta_act = Delta_act_out.Data;
+    Vehicle_state_14dof = Vehicle_state_14dof_out.Data;
+    Vehicle_state_residual = Vehicle_state_residual_out.Data;
+    
+    % 保存数据到 .mat 文件
+    save_filename = sprintf('C:\\Users\\Admin\\Desktop\\Dynamic_Model_with_NN_1.0\\data\\random_control\\data%03d.mat', i);
+    save(save_filename, 'sim_params', 'vehicle_params', 'initial_conditions', 'random_seeds', 'T_motor', 'Delta_act', 'Vehicle_state_14dof', 'Vehicle_state_residual');
+
+end
+
