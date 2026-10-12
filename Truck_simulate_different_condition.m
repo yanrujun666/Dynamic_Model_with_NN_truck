@@ -15,7 +15,8 @@ m = m_sprung + m_load + m_unsprung; % 整车质量kg（簧上与前后簧下质量之和）
 % Lr = ; % 质心距离后轴的距离m
 % L = ; % 轴距m 
 % Iz = ; % 整车z轴转动惯量kg*m^2
-
+Lfm = 3.250; %前中轴轴距m
+Lmr = Lfm; %中后轴轴距m
 
 r = 0.510; % 车轮滚动半径/m
 u = 1; % 路面附着系数
@@ -34,6 +35,9 @@ vehicle_params.m = m;
 % vehicle_params.Lr = Lr;
 % vehicle_params.L = L;
 % vehicle_params.Iz = Iz;
+vehicle_params.m_sprung = m_sprung;
+vehicle_params.Lfm = Lfm;
+vehicle_params.Lmr = Lmr;
 vehicle_params.r = r;
 vehicle_params.u = u;
 vehicle_params.g = g;
@@ -56,6 +60,8 @@ signalEditorBlockPath = [model, '/Signal Editor-opposite_steering'];
 % signalEditorBlockPath = [model, '/Signal Editor-tank_turn'];
 
 % signalEditorBlockPath = [model, '/Signal Editor-front_middle_steering']; 
+
+% signalEditorBlockPath = [model, '/Signal Editor-only_front_steering']; 
 
 % signalEditorBlockPath = [model, '/Signal Editor-same_steering_crab_motion']; 
 
@@ -113,10 +119,25 @@ catch
         %                  'Scenario_snake_deacc_5m_s_9','Scenario_snake_deacc_5m_s_10','Scenario_snake_deacc_5m_s_11','Scenario_snake_deacc_5m_s_12',...
         %                  'Scenario_snake_deacc_5m_s_13','Scenario_snake_deacc_5m_s_14','Scenario_snake_deacc_5m_s_15','Scenario_snake_deacc_5m_s_16',...
         %                  }; 
+
+        % scenarioNames = {"Scenario_snake_const_5m_s_1"};
         
-        scenarioNames = {'Scenario_snake_rollover_5m_s_1','Scenario_snake_rollover_5m_s_2','Scenario_snake_rollover_5m_s_3','Scenario_snake_rollover_5m_s_4'
+        scenarioNames = {'Scenario_snake_rollover_5m_s_1','Scenario_snake_rollover_5m_s_2','Scenario_snake_rollover_5m_s_3','Scenario_snake_rollover_5m_s_4',...
+            'Scenario_snake_rollover_5m_s_5','Scenario_snake_rollover_5m_s_6','Scenario_snake_rollover_5m_s_7','Scenario_snake_rollover_5m_s_8',...
+            'Scenario_snake_rollover_5m_s_9','Scenario_snake_rollover_5m_s_10','Scenario_snake_rollover_5m_s_11','Scenario_snake_rollover_5m_s_12',...
+            'Scenario_snake_rollover_5m_s_13','Scenario_snake_rollover_5m_s_14','Scenario_snake_rollover_5m_s_15','Scenario_snake_rollover_5m_s_16',...
+            'Scenario_snake_rollover_5m_s_17','Scenario_snake_rollover_5m_s_18','Scenario_snake_rollover_5m_s_19','Scenario_snake_rollover_5m_s_20',...
                          }; 
-        % 'Scenario_snake_rollover_10m_s_1','Scenario_snake_rollover_10m_s_2'
+
+
+        % scenarioNames = {'Scenario_snake_rollover_10m_s_1','Scenario_snake_rollover_10m_s_2','Scenario_snake_rollover_10m_s_3','Scenario_snake_rollover_10m_s_4',...
+        %     'Scenario_snake_rollover_10m_s_5','Scenario_snake_rollover_10m_s_6','Scenario_snake_rollover_10m_s_7','Scenario_snake_rollover_10m_s_8',...
+        %     'Scenario_snake_rollover_10m_s_9','Scenario_snake_rollover_10m_s_10','Scenario_snake_rollover_10m_s_11','Scenario_snake_rollover_10m_s_12',...
+        %     'Scenario_snake_rollover_10m_s_13','Scenario_snake_rollover_10m_s_14','Scenario_snake_rollover_10m_s_15','Scenario_snake_rollover_10m_s_16',...
+        %     'Scenario_snake_rollover_10m_s_17','Scenario_snake_rollover_10m_s_18','Scenario_snake_rollover_10m_s_19','Scenario_snake_rollover_10m_s_20',...
+        %                  }; 
+        
+        % scenarioNames = {'Scenario_snake_rollover_10m_s_1'};
       
         warning('无法自动获取场景名称，使用手动指定的场景列表。请确保这些名称与Signal Editor中的场景匹配。');
     end
@@ -155,8 +176,8 @@ for i = 1:total_iterations
     Vehicle_state_trucksim_39d = Vehicle_state_trucksim_39d(1:10:end, :);
     
     % 构造文件路径
-    save_dir = ['D:\\YRJ_Workspace\\Dynamic_Model_with_NN_truck\\data\\trucksim\\different_scenarios\\data_scenarios_for_rollover_v1\\' ...
-        'VehicleParams_IzuA_IzulA_RrA_CdA_BcdA'];
+    save_dir = ['D:\\YRJ_Workspace\\Dynamic_Model_with_NN_truck\\data\\trucksim\\different_scenarios\\data_scenarios_for_rollover_v2\\' ...
+        'VehicleParams_IzuA_IzulA_RrA_CdA_BcdA-m_sprungA-LfmA'];
 
     if ~exist(save_dir, 'dir')
         mkdir(save_dir);
